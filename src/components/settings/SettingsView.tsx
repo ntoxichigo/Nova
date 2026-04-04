@@ -52,6 +52,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { LLMConfig } from '@/lib/llm/types';
+import { useAppStore } from '@/store/app-store';
 
 type ProviderType = LLMConfig['provider'];
 
@@ -277,15 +278,10 @@ export function SettingsView() {
 
   const handleClearAll = async () => {
     try {
-      await Promise.all([
-        fetch('/api/skills', { method: 'DELETE' }),
-        fetch('/api/knowledge', { method: 'DELETE' }),
-        fetch('/api/memory', { method: 'DELETE' }),
-        fetch('/api/conversations', { method: 'DELETE' }),
-      ]);
+      const res = await fetch('/api/data/reset', { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to clear data');
       toast.success('All data cleared successfully');
       // Reset store state
-      const { useAppStore } = await import('@/store/app-store');
       const store = useAppStore.getState();
       store.setSkills([]);
       store.setKnowledge([]);

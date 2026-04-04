@@ -55,7 +55,7 @@ export function ConversationSidebar() {
     setActiveConversationId(id);
     setSidebarOpen(false);
     try {
-      const res = await fetch(`/api/conversations/${id}/messages`);
+      const res = await fetch(`/api/conversations/${id}`);
       if (res.ok) {
         const messages = await res.json();
         useAppStore.getState().setMessages(messages);
@@ -109,10 +109,13 @@ export function ConversationSidebar() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
               >
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectConversation(conv.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSelectConversation(conv.id); }}
                   className={cn(
-                    'group flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-all hover:bg-secondary/50',
+                    'group flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-all hover:bg-secondary/50 cursor-pointer',
                     activeConversationId === conv.id && 'bg-secondary border border-border/50'
                   )}
                 >
@@ -151,7 +154,7 @@ export function ConversationSidebar() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </button>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>

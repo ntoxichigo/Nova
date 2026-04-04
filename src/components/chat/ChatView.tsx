@@ -154,7 +154,6 @@ export function ChatView() {
                     <MessageBubble
                       key={message.id}
                       message={message}
-                      isStreaming={false}
                     />
                   ))}
                 </AnimatePresence>

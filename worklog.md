@@ -160,3 +160,41 @@ Updated `src/app/api/chat/route.ts`:
 - `src/app/page.tsx` — Added SettingsView to view map
 - `src/components/skills/SkillCard.tsx` — Delete confirmation dialog
 - `src/components/dashboard/DashboardView.tsx` — Refresh button + auto-refresh
+
+---
+## Task ID: 3 - Critical Audit & Bug Fixes
+### Work Task
+Full audit of the Nova AI Agent Platform after user reported a hydration error. Identified and fixed 5 bugs: nested button hydration error, missing API route for conversation messages, broken Clear All Data function, dead prop on MessageBubble, and noisy Prisma query logging.
+
+### Work Summary
+
+#### Critical Bug: Nested `<button>` Hydration Error (ConversationSidebar.tsx)
+- **Problem**: The conversation list item was a `<button>` containing an `AlertDialogTrigger` with `asChild` that also rendered a `<button>`. HTML spec forbids nested buttons. This caused a React hydration mismatch error in the browser console.
+- **Fix**: Changed the outer `<button>` to a `<div role="button" tabIndex={0}>` with `onClick` and `onKeyDown` handlers for accessibility. This preserves the clickable behavior while avoiding the nested button violation.
+
+#### Bug: Missing `/api/conversations/:id/messages` Route
+- **Problem**: `ConversationSidebar.tsx` called `fetch('/api/conversations/${id}/messages')` when clicking a conversation to load its messages, but no such route existed. The actual route was `/api/conversations/[id]` which returns messages. This meant clicking any conversation would silently fail to load its messages.
+- **Fix**: Changed the URL in `handleSelectConversation` from `/api/conversations/${id}/messages` to `/api/conversations/${id}`.
+
+#### Bug: Clear All Data Always Failed
+- **Problem**: `SettingsView.tsx` handleClearAll() called `fetch('/api/skills', { method: 'DELETE' })` and similar for knowledge, memory, conversations. However, each of these DELETE endpoints requires an `?id=xxx` query parameter. Without an ID, they return a 400 error. The "Clear All Data" button was completely broken.
+- **Fix**: Created a dedicated `POST /api/data/reset` endpoint in `src/app/api/data/reset/route.ts` that performs a database transaction deleting all records from messages, conversations, knowledge, agentMemory, skills, and settings tables. Updated SettingsView to call this single endpoint instead of 4 broken individual DELETEs.
+
+#### Minor: Dead `isStreaming` Prop on MessageBubble
+- **Problem**: `ChatView.tsx` passed `isStreaming={false}` to `MessageBubble` but the component's TypeScript interface didn't declare this prop. It was silently ignored due to `ignoreBuildErrors: true` in next.config.
+- **Fix**: Removed the unused `isStreaming` prop from the `MessageBubble` usage.
+
+#### Minor: Noisy Prisma Query Logging
+- **Problem**: `db.ts` initialized PrismaClient with `log: ['query']` which logs every single database query to the console, creating excessive noise during development.
+- **Fix**: Changed to `log: ['error', 'warn']` to only log significant database events.
+
+#### Build Verification
+- Ran `npx next build` — compiled successfully with all 13 API routes + static page generated
+- Ran `npx eslint ./src/` — 0 errors, 0 warnings
+
+### Files Changed
+- `src/components/chat/ConversationSidebar.tsx` — Fixed nested button + wrong API URL
+- `src/components/chat/ChatView.tsx` — Removed dead isStreaming prop
+- `src/components/settings/SettingsView.tsx` — Fixed handleClearAll to use new endpoint, added useAppStore import
+- `src/lib/db.ts` — Changed Prisma log level from query to error/warn
+- `src/app/api/data/reset/route.ts` — New dedicated data reset endpoint (POST)
