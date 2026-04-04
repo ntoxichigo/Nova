@@ -6,6 +6,7 @@ import { ChatView } from '@/components/chat/ChatView';
 import { SkillsView } from '@/components/skills/SkillsView';
 import { TeachView } from '@/components/teach/TeachView';
 import { DashboardView } from '@/components/dashboard/DashboardView';
+import { SettingsView } from '@/components/settings/SettingsView';
 import { useAppStore } from '@/store/app-store';
 
 const viewComponents = {
@@ -13,6 +14,7 @@ const viewComponents = {
   skills: SkillsView,
   teach: TeachView,
   dashboard: DashboardView,
+  settings: SettingsView,
 };
 
 export default function Home() {

@@ -85,17 +85,20 @@ export function ChatView() {
       }
 
       // Remove optimistic user message and replace with real ones
-      setMessages([
-        ...messages.filter((m) => m.id !== userMessage.id),
-        userMessage,
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.message,
-          skillsUsed: data.skillsUsed || [],
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      // Use setState callback to avoid stale closure race condition
+      useAppStore.setState((state) => ({
+        messages: [
+          ...state.messages.filter((m) => m.id !== userMessage.id),
+          userMessage,
+          {
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            content: data.message,
+            skillsUsed: data.skillsUsed || [],
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }));
 
       setLearningSuggestions(data.learningSuggestions || []);
       setIsTyping(false);

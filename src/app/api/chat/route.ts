@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
+import { getLLMConfig, getAgentName, getAgentPersonality } from '@/lib/settings';
+import { createLLMProvider } from '@/lib/llm';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,10 +61,11 @@ export async function POST(request: NextRequest) {
       take: 10,
     });
 
-    // Update memory access count
-    for (const mem of memories) {
-      await db.agentMemory.update({
-        where: { id: mem.id },
+    // Update memory access count in a single batch
+    if (memories.length > 0) {
+      const memoryIds = memories.map((m) => m.id);
+      await db.agentMemory.updateMany({
+        where: { id: { in: memoryIds } },
         data: { accessCount: { increment: 1 }, lastAccessed: new Date() },
       });
     }
@@ -75,8 +77,8 @@ export async function POST(request: NextRequest) {
       take: 20,
     });
 
-    // Build system prompt
-    let systemPrompt = `You are Nova, an intelligent AI assistant that learns and grows with your user. You have been taught various skills and knowledge that you should actively use when relevant.
+    // Build system prompt with overflow safety (cap at ~6000 chars)
+    const BASE_PROMPT = `You are Nova, an intelligent AI assistant that learns and grows with your user. You have been taught various skills and knowledge that you should actively use when relevant.
 
 ## Your Personality
 - You are helpful, curious, and eager to learn
@@ -87,30 +89,53 @@ export async function POST(request: NextRequest) {
 - Use markdown formatting for better readability
 
 `;
+    const CONTEXT_FOOTER = `\n## Current Conversation Context:\nThe user's latest message and recent conversation history will follow. Respond helpfully and use your skills and knowledge when appropriate.\n`;
+    const MAX_SYSTEM_PROMPT_LENGTH = 6000;
+    const availableSpace = MAX_SYSTEM_PROMPT_LENGTH - BASE_PROMPT.length - CONTEXT_FOOTER.length;
 
+    let systemPrompt = BASE_PROMPT;
+
+    // Build skills section
+    let skillsSection = '';
     if (skills.length > 0) {
-      systemPrompt += `## Your Active Skills:\n`;
+      skillsSection += `## Your Active Skills:\n`;
       for (const skill of skills) {
-        systemPrompt += `### ${skill.name} (${skill.category})\n${skill.description}\nInstructions: ${skill.instructions}\n\n`;
+        skillsSection += `### ${skill.name} (${skill.category})\n${skill.description}\nInstructions: ${skill.instructions}\n\n`;
       }
     }
 
+    // Build knowledge section
+    let knowledgeSection = '';
     if (relevantKnowledge.length > 0) {
-      systemPrompt += `## Your Knowledge Base:\n`;
+      knowledgeSection += `## Your Knowledge Base:\n`;
       for (const k of relevantKnowledge) {
         const tags: string[] = JSON.parse(k.tags);
-        systemPrompt += `### ${k.topic} [${tags.join(', ')}]\n${k.content}\n\n`;
+        knowledgeSection += `### ${k.topic} [${tags.join(', ')}]\n${k.content}\n\n`;
       }
     }
 
+    // Build memories section (sorted by importance desc — most important first)
+    let memoriesSection = '';
     if (memories.length > 0) {
-      systemPrompt += `## Important Memories:\n`;
+      memoriesSection += `## Important Memories:\n`;
       for (const mem of memories) {
-        systemPrompt += `- [${mem.type}, importance: ${mem.importance}/10] ${mem.content}\n`;
+        memoriesSection += `- [${mem.type}, importance: ${mem.importance}/10] ${mem.content}\n`;
       }
     }
 
-    systemPrompt += `\n## Current Conversation Context:\nThe user's latest message and recent conversation history will follow. Respond helpfully and use your skills and knowledge when appropriate.\n`;
+    // Truncate to fit within available space, prioritizing skills > memories > knowledge
+    let combinedSections = skillsSection + memoriesSection + knowledgeSection;
+    if (combinedSections.length > availableSpace) {
+      combinedSections = combinedSections.slice(0, availableSpace);
+      // Truncate at last newline to avoid cutting mid-sentence
+      const lastNewline = combinedSections.lastIndexOf('\n');
+      if (lastNewline > availableSpace * 0.7) {
+        combinedSections = combinedSections.slice(0, lastNewline);
+      }
+      combinedSections += '\n[System prompt truncated to fit context window]\n';
+    }
+
+    systemPrompt += combinedSections + CONTEXT_FOOTER;
 
     // Build messages array for the AI
     const aiMessages = [
@@ -121,13 +146,30 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
-    // Call z-ai-web-dev-sdk
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: aiMessages,
-    });
+    // Get LLM config and create provider
+    const llmConfig = await getLLMConfig();
+    const agentName = await getAgentName();
+    const agentPersonality = await getAgentPersonality();
 
-    const assistantMessage = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    // Inject agent name and personality into system prompt
+    if (agentName !== 'Nova' || agentPersonality) {
+      aiMessages[0].content = aiMessages[0].content.replace('You are Nova', `You are ${agentName}`);
+      if (agentPersonality) {
+        aiMessages[0].content += `\n\n## Custom Personality:\n${agentPersonality}\n`;
+      }
+    }
+
+    // Call configured LLM provider
+    let assistantMessage: string;
+    try {
+      const provider = createLLMProvider(llmConfig);
+      const response = await provider.chat(aiMessages);
+      assistantMessage = response.content || 'Sorry, I could not generate a response.';
+    } catch (llmError: unknown) {
+      console.error('LLM call failed:', llmError);
+      const errorMsg = llmError instanceof Error ? llmError.message : 'Unknown error';
+      assistantMessage = `I'm having trouble connecting to my brain right now. Please check the LLM settings and try again.\n\n*(Error: ${errorMsg})*`;
+    }
 
     // Check for learning suggestions
     const learningSuggestions: string[] = [];

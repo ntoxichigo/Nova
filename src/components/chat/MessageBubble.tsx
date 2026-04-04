@@ -21,7 +21,18 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const skillsUsed = Array.isArray(message.skillsUsed) ? message.skillsUsed : [];
+  // Handle skillsUsed being a JSON string (from DB) or array (from live chat)
+  let skillsUsed: string[] = [];
+  if (Array.isArray(message.skillsUsed)) {
+    skillsUsed = message.skillsUsed;
+  } else if (typeof message.skillsUsed === 'string') {
+    try {
+      const parsed = JSON.parse(message.skillsUsed);
+      skillsUsed = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      skillsUsed = [];
+    }
+  }
 
   return (
     <motion.div

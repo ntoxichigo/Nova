@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AppView = 'chat' | 'skills' | 'teach' | 'dashboard';
+export type AppView = 'chat' | 'skills' | 'teach' | 'dashboard' | 'settings';
 
 interface Message {
   id: string;

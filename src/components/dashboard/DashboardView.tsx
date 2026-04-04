@@ -25,6 +25,7 @@ import {
   Layers,
   Activity,
   Settings,
+  RefreshCw,
 } from 'lucide-react';
 import { useAppStore } from '@/store/app-store';
 
@@ -97,9 +98,14 @@ export function DashboardView() {
     }
   }, []);
 
+  // Auto-refresh when switching to dashboard view
+  const activeView = useAppStore((state) => state.activeView);
   useEffect(() => {
-    loadStats();
-  }, [loadStats]);
+    if (activeView === 'dashboard') {
+      setLoading(true);
+      loadStats();
+    }
+  }, [activeView, loadStats]);
 
   const quickActions = [
     {
@@ -187,14 +193,25 @@ export function DashboardView() {
   return (
     <div className="mx-auto max-w-6xl p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <TrendingUp className="h-6 w-6 text-primary" />
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Overview of Nova&apos;s capabilities and your teaching progress.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <TrendingUp className="h-6 w-6 text-primary" />
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Overview of Nova&apos;s capabilities and your teaching progress.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => { setLoading(true); loadStats(); }}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Intelligence Level */}

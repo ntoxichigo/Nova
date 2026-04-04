@@ -5,6 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, MessageSquare, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAppStore } from '@/store/app-store';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -113,12 +124,33 @@ export function ConversationSidebar() {
                       {conv._count && ` · ${conv._count.messages} msgs`}
                     </p>
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteConversation(conv.id, e)}
-                    className="shrink-0 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-all"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="shrink-0 rounded-md p-1 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive transition-all"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete &quot;{conv.title}&quot;? All messages will be permanently lost.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={(e) => handleDeleteConversation(conv.id, e as unknown as React.MouseEvent)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </button>
               </motion.div>
             ))}

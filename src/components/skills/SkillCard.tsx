@@ -5,6 +5,17 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Zap,
   Code,
   Pen,
@@ -106,14 +117,34 @@ export function SkillCard({ skill, onToggle, onEdit, onDelete }: SkillCardProps)
         >
           Edit
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onDelete(skill.id)}
-          className="h-7 text-xs text-destructive hover:bg-destructive/10"
-        >
-          Delete
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs text-destructive hover:bg-destructive/10"
+            >
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>&quot;{skill.name}&quot;</strong>? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onDelete(skill.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </motion.div>
   );

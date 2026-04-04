@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Brain, MessageSquare, Sparkles, LayoutDashboard, GraduationCap, Menu } from 'lucide-react';
+import { Brain, MessageSquare, Sparkles, LayoutDashboard, GraduationCap, Menu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore, type AppView } from '@/store/app-store';
 
@@ -10,6 +10,7 @@ const navItems: { id: AppView; label: string; icon: React.ReactNode }[] = [
   { id: 'skills', label: 'Skills', icon: <Sparkles className="h-4 w-4" /> },
   { id: 'teach', label: 'Teach', icon: <GraduationCap className="h-4 w-4" /> },
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
 ];
 
 export function Navbar() {

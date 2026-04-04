@@ -54,3 +54,11 @@ model AgentMemory {
   lastAccessed DateTime @default(now())
   createdAt    DateTime @default(now())
 }
+
+model Settings {
+  id    String @id @default("default")
+  key   String @unique
+  value String
+
+  @@map("settings")
+}
