@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  instructions String
+  category    String   @default("general")
+  isActive    Boolean  @default(true)
+  icon        String   @default("Zap")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Knowledge {
+  id        String   @id @default(cuid())
+  topic     String
+  content   String
+  tags      String   @default("[]")
+  source    String   @default("user_teach")
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String    @default("New Conversation")
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  skillsUsed     String      @default("[]")
+  createdAt      DateTime    @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model AgentMemory {
+  id           String   @id @default(cuid())
+  type         String
+  content      String
+  importance   Int      @default(5)
+  accessCount  Int      @default(0)
+  lastAccessed DateTime @default(now())
+  createdAt    DateTime @default(now())
+}
