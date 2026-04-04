@@ -223,3 +223,46 @@ User reported that selecting any LLM provider other than Z-AI (e.g., LM Studio, 
 - `prisma/schema.prisma` — Fixed Settings model (removed `id` field, made `key` the primary key)
 - `src/components/settings/SettingsView.tsx` — Added error checking to handleTestConnection
 - `db/custom.db` — Deleted and recreated with fixed schema
+
+---
+## Task ID: 5 - Standalone Build Prisma Client Resolution Fix
+### Work Task
+After fixing the Settings model schema, the production standalone server still returned "Failed to save settings" with `Cannot read properties of undefined (reading 'upsert')`. The Prisma client was not being resolved correctly in the standalone production build.
+
+### Work Summary
+
+#### Root Cause: Next.js Turbopack Hashed Module Resolution
+- **Problem**: Next.js's standalone build with Turbopack traces the `@prisma/client` import and creates a content-hashed alias (e.g., `@prisma/client-2c3a283f134fdcb6`). The compiled server chunks use `require("@prisma/client-2c3a283f134fdcb6")` to load the Prisma client. However, this hashed module name doesn't exist in `node_modules`. When the require fails, Next.js's module system (`e.x()`) catches the error and returns `undefined`, causing `db.settings` to be `undefined`.
+- **Why it worked in dev but not prod**: In development mode, Turbopack handles module resolution differently. In the standalone production build, the chunks reference the hashed module name directly, and Bun's module resolution couldn't find it at the expected path.
+
+#### Fix: Postbuild Script
+- **Approach**: Created `scripts/postbuild.mjs` — a postbuild hook that runs after `next build` to properly set up the Prisma client for standalone mode.
+- **What it does**:
+  1. Copies `.next/static` to standalone output
+  2. Copies `public/` to standalone output
+  3. Copies `.prisma/client/` (generated Prisma client) to standalone `node_modules/.prisma/client/`
+  4. Copies `@prisma/client/` to standalone `node_modules/@prisma/client/`
+  5. **Scans the compiled server chunks** to find the hashed Prisma module name
+  6. **Creates the hashed module directory** at `node_modules/@prisma/client-XXXX/` with all Prisma client files + a proper `index.js` that re-exports from `client.js`
+  7. Ensures `@prisma/package.json` exists for Node's scoped package resolution
+
+#### Additional Changes
+- Updated `package.json` build script: `"build": "next build && node scripts/postbuild.mjs"`
+- Added `serverExternalPackages` to `next.config.ts` (though Turbopack still hashed the module)
+- Added `output` path to Prisma generator: `output = "../node_modules/.prisma/client"`
+
+#### End-to-End Verification
+All 7 API endpoints tested and working:
+1. ✅ `PUT /api/settings` — Saves settings correctly (LM Studio provider, base URL, model)
+2. ✅ `GET /api/settings` — Reads settings back with correct values
+3. ✅ `POST /api/skills` — Creates skills
+4. ✅ `GET /api/skills` — Lists skills
+5. ✅ `POST /api/knowledge` — Creates knowledge entries
+6. ✅ `GET /api/conversations` — Lists conversations
+7. ✅ `POST /api/settings/test-llm` — Tests Z-AI connection successfully
+
+### Files Changed
+- `scripts/postbuild.mjs` — New postbuild script for standalone Prisma setup (new)
+- `package.json` — Updated build script to use postbuild.mjs
+- `next.config.ts` — Added serverExternalPackages
+- `prisma/schema.prisma` — Added explicit output path for generator
