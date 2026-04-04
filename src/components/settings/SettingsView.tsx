@@ -215,7 +215,7 @@ export function SettingsView() {
     setTestResult(null);
     try {
       // Save settings first, then test
-      await fetch('/api/settings', {
+      const saveRes = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -228,6 +228,11 @@ export function SettingsView() {
         }),
       });
 
+      if (!saveRes.ok) {
+        const errData = await saveRes.json().catch(() => null);
+        throw new Error(errData?.error || 'Failed to save settings before testing');
+      }
+
       const res = await fetch('/api/settings/test-llm', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
@@ -238,8 +243,9 @@ export function SettingsView() {
         toast.error('LLM connection failed');
       }
     } catch (err) {
-      setTestResult({ success: false, message: 'Failed to test connection' });
-      toast.error('Failed to test connection');
+      const message = err instanceof Error ? err.message : 'Failed to test connection';
+      setTestResult({ success: false, message });
+      toast.error(message);
     } finally {
       setTesting(false);
     }

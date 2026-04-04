@@ -56,8 +56,7 @@ model AgentMemory {
 }
 
 model Settings {
-  id    String @id @default("default")
-  key   String @unique
+  key   String @id
   value String
 
   @@map("settings")

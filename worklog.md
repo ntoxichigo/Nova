@@ -198,3 +198,28 @@ Full audit of the Nova AI Agent Platform after user reported a hydration error. 
 - `src/components/settings/SettingsView.tsx` — Fixed handleClearAll to use new endpoint, added useAppStore import
 - `src/lib/db.ts` — Changed Prisma log level from query to error/warn
 - `src/app/api/data/reset/route.ts` — New dedicated data reset endpoint (POST)
+
+---
+## Task ID: 4 - Settings Model Fix (LM Studio/Ollama Provider Not Saving)
+### Work Task
+User reported that selecting any LLM provider other than Z-AI (e.g., LM Studio, Ollama) and clicking "Test Connection" always showed "Connected to Z-AI (Built-in)". The provider settings were not being persisted to the database.
+
+### Work Summary
+
+#### Root Cause: Broken Settings Model Primary Key
+- **Problem**: The `Settings` model in `prisma/schema.prisma` had `id String @id @default("default")` — a static default primary key. Since every new settings row would try to use `id = "default"`, only ONE settings entry could ever be created in the table. When `setAllSettings()` tried to save multiple settings (provider, base_url, model, etc.) in a transaction, only the first upsert succeeded; all subsequent ones failed with a primary key constraint violation. The errors were caught silently, so `getLLMConfig()` always returned the default `'z-ai'` provider.
+- **Fix**: Changed the Settings model to use `key` as the primary key instead of having a separate `id` field. Now `key String @id` allows unlimited settings rows, each with a unique key.
+
+#### Additional Fix: handleTestConnection Error Handling
+- **Problem**: `handleTestConnection` in SettingsView called `fetch('/api/settings', { method: 'PUT' })` to save settings before testing, but never checked if the save succeeded. If the save failed (as it always did with the broken model), the test would proceed with old/stale settings, silently falling back to Z-AI.
+- **Fix**: Added response status check — if the save returns non-OK, throws an error with the server's error message. The catch block now displays the actual error message to the user.
+
+#### Verification
+- Deleted old database and pushed fixed schema with `prisma db push`
+- Ran inline test that successfully created 3 settings rows (llm_provider, llm_base_url, llm_model) and read them back
+- Build passes cleanly
+
+### Files Changed
+- `prisma/schema.prisma` — Fixed Settings model (removed `id` field, made `key` the primary key)
+- `src/components/settings/SettingsView.tsx` — Added error checking to handleTestConnection
+- `db/custom.db` — Deleted and recreated with fixed schema
