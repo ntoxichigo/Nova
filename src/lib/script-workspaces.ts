@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { mkdir, readdir, readFile, rm, stat, unlink, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';

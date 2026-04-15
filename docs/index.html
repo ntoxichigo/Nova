@@ -450,6 +450,38 @@
       gap: 20px;
     }
 
+    .shots-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 20px;
+    }
+
+    .shot-card {
+      padding: 16px;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      background: rgba(255, 255, 255, 0.028);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .shot-card img {
+      width: 100%;
+      display: block;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 182, 255, 0.14);
+      background: #061120;
+    }
+
+    .shot-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
     .showcase-grid {
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
@@ -859,6 +891,7 @@
       .grid-3,
       .grid-2,
       .summary-band,
+      .shots-grid,
       .showcase-grid { grid-template-columns: 1fr; }
 
       .status-row,
@@ -1035,6 +1068,23 @@
         <p>
           This is the story the page should communicate: <span class="copy-emphasis">chat for reasoning, Studio for execution, and support surfaces around the edges</span>.
         </p>
+      </div>
+
+      <div class="shots-grid" style="margin-bottom: 20px;">
+        <article class="shot-card">
+          <img src="./assets/nova-app-desktop.png" alt="Nova desktop app screenshot" />
+          <div class="shot-meta">
+            <strong>Desktop app view</strong>
+            <span>Real local capture</span>
+          </div>
+        </article>
+        <article class="shot-card">
+          <img src="./assets/nova-app-mobile.png" alt="Nova mobile app screenshot" />
+          <div class="shot-meta">
+            <strong>Mobile view</strong>
+            <span>Responsive capture</span>
+          </div>
+        </article>
       </div>
 
       <div class="showcase-stack">

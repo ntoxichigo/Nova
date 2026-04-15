@@ -1,14 +1,32 @@
 # Nova
 
-Nova is a local-first agent chat alpha for technical users. It keeps the main workflow centered on conversation, while still exposing Studio, memory, and support tooling when the task genuinely needs them.
+Nova is a local-first agent chat workspace for technical users. The core idea is simple: start in chat, turn a fuzzy technical request into a clear plan, and only widen into files, previews, or commands when the work becomes concrete.
 
-## Alpha focus
+![Nova desktop app](docs/assets/nova-app-desktop.png)
 
-- Streaming agent chat with guarded tool execution
-- Local Studio for project-aware files, previews, and commands
-- Memory, teach, and skill support for iterative technical work
-- Provider support for local and hosted LLMs
-- Local-first posture with remote exposure disabled by default
+## What Nova is for
+
+- Diagnosing bugs and narrowing likely failure points before touching code
+- Planning implementation work before opening the IDE surface
+- Editing real project files, previews, and commands in Studio when needed
+- Accumulating reusable knowledge through memory, teach, and skills
+- Keeping remote exposure guarded instead of making it the default story
+
+## Product stance
+
+Nova is being shipped as an open-source alpha for technical users.
+
+- Chat is the primary workflow.
+- Studio is the execution surface, not the headline.
+- Teach, Skills, Doctor, and Ops are support surfaces around the main loop.
+- Local-first posture matters more than maximizing surface area.
+
+## Hero workflow
+
+1. Start in chat and define the task.
+2. Let Nova reason, summarize, or propose a first pass.
+3. Move into Studio only when files, previews, or commands are required.
+4. Use support surfaces when the task benefits from memory, diagnostics, or orchestration visibility.
 
 ## Quick start
 
@@ -37,14 +55,16 @@ DATABASE_URL=file:./db/custom.db
 TOKEN_ENCRYPTION_SECRET=replace-with-a-random-64-char-hex-string
 ```
 
-Recommended for any non-local deployment (Nova env vars). Legacy `NTOX_*` env vars are still accepted.
+Recommended for any non-local deployment:
 
 ```env
 NOVA_API_SECRET=replace-with-a-long-random-string
 NOVA_ALLOW_REMOTE_UI=false
 ```
 
-4. Initialize DB and run development server
+Legacy `NTOX_*` env vars are still accepted for compatibility.
+
+4. Initialize the database and run the dev server
 
 ```bash
 npm run db:generate
@@ -57,35 +77,24 @@ npm run dev
 ## Security defaults
 
 - Localhost requests work out of the box.
-- Remote UI is blocked unless `NOVA_ALLOW_REMOTE_UI=true` (or legacy `NTOX_ALLOW_REMOTE_UI=true`).
-- Remote API calls require `NOVA_API_SECRET` (or legacy `NTOX_API_SECRET`).
+- Remote UI is blocked unless `NOVA_ALLOW_REMOTE_UI=true`.
+- Remote API calls require `NOVA_API_SECRET`.
 - Webhook routes keep their own service-specific auth.
 
-## Hero workflow
+## Screenshots
 
-1. Start in chat and define the task.
-2. Let Nova plan or draft the first pass.
-3. Move into Studio only when files, previews, or commands are needed.
-4. Use support surfaces like Teach, Skills, Doctor, and Ops as secondary tools.
+| Desktop | Mobile |
+| --- | --- |
+| ![Nova desktop screenshot](docs/assets/nova-app-desktop.png) | ![Nova mobile screenshot](docs/assets/nova-app-mobile.png) |
 
-## Cross-platform developer scripts
+## Cross-platform scripts
 
 - Standard dev: `npm run dev`
-- Cross-platform bootstrap (installs deps, pushes DB, starts app): `npm run dev:bootstrap`
-- Windows helper script: `npm run dev:win`
-- Unix helper script: `npm run dev:unix`
+- Bootstrap: `npm run dev:bootstrap`
+- Windows helper: `npm run dev:win`
+- Unix helper: `npm run dev:unix`
 - Windows build helper: `npm run build:win`
 - Windows start helper: `npm run start:win`
-
-## Provider setup note (Xiaomi)
-
-If you use Xiaomi Token Plan keys, set the base URL to:
-
-```text
-https://token-plan-ams.xiaomimimo.com/v1
-```
-
-Do not include trailing quotes or backticks in model or base URL fields.
 
 ## Scheduler
 
@@ -107,14 +116,14 @@ npm run typecheck
 npm run build
 ```
 
-## Documentation map
+## Documentation
 
-- Onboarding guide: [docs/ONBOARDING.md](docs/ONBOARDING.md)
-- Production deployment: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-- Security guardrails: [docs/SECURITY.md](docs/SECURITY.md)
-- Performance guide: [docs/PERFORMANCE.md](docs/PERFORMANCE.md)
-- Skill quality audit: [docs/SKILLS.md](docs/SKILLS.md)
-- Generated skill report: [docs/SKILL_AUDIT_REPORT.md](docs/SKILL_AUDIT_REPORT.md)
+- [Onboarding](docs/ONBOARDING.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Security](docs/SECURITY.md)
+- [Performance](docs/PERFORMANCE.md)
+- [Skills audit](docs/SKILLS.md)
+- [Generated skill report](docs/SKILL_AUDIT_REPORT.md)
 
 ## Open-source alpha baseline
 
