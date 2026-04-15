@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { tryRecordAuditEvent } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,7 +66,22 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json({ error: `Unknown teach type: ${type}` }, { status: 400 });
     }
-    
+
+    await tryRecordAuditEvent({
+      source: 'teach',
+      action: `create_${type}`,
+      entityType: type,
+      entityId: result.id,
+      entityLabel:
+        (typeof result === 'object' && result && 'name' in result && typeof result.name === 'string' && result.name) ||
+        (typeof result === 'object' && result && 'topic' in result && typeof result.topic === 'string' && result.topic) ||
+        type,
+      summary: `Taught Nova new ${type}`,
+      details: {
+        type,
+      },
+    });
+
     return NextResponse.json(result, { status: 201 });
   } catch (error: unknown) {
     console.error('Error teaching agent:', error);

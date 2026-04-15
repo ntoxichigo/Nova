@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova | Local-First Agent Chat Alpha</title>
+  <meta
+    name="description"
+    content="Nova is a local-first agent chat alpha for technical users. Start in chat, move into Studio only when files, previews, or commands are needed."
+  />
+  <style>
+    :root {
+      --bg: #09111f;
+      --bg-soft: #0f1a2e;
+      --panel: rgba(15, 26, 46, 0.86);
+      --panel-strong: rgba(12, 21, 38, 0.96);
+      --line: rgba(145, 178, 255, 0.16);
+      --text: #eef4ff;
+      --muted: #9eb0d1;
+      --accent: #7dd3fc;
+      --accent-2: #34d399;
+      --accent-3: #f59e0b;
+      --shadow: 0 24px 80px rgba(3, 7, 18, 0.44);
+      --radius: 22px;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(52, 211, 153, 0.12), transparent 32%),
+        radial-gradient(circle at top right, rgba(125, 211, 252, 0.16), transparent 30%),
+        linear-gradient(180deg, #08101d 0%, #0d1729 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(calc(100% - 32px), var(--max));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(8, 16, 29, 0.78);
+      border-bottom: 1px solid rgba(145, 178, 255, 0.08);
+    }
+
+    .nav-inner {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: #052033;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      box-shadow: 0 10px 30px rgba(52, 211, 153, 0.16);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .hero {
+      padding: 84px 0 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-card,
+    .panel,
+    .cta {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(125, 211, 252, 0.18), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(125, 211, 252, 0.08);
+      border: 1px solid rgba(125, 211, 252, 0.14);
+      color: var(--accent);
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.1);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 22px;
+      font-size: clamp(2.8rem, 7vw, 5.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 12ch;
+    }
+
+    .hero-subtitle {
+      margin-top: 18px;
+      max-width: 60ch;
+      font-size: 1.08rem;
+      color: var(--muted);
+    }
+
+    .cta-row {
+      margin-top: 28px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: #082031;
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .hero-card {
+      padding: 28px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+        var(--panel-strong);
+    }
+
+    .terminal {
+      border-radius: 18px;
+      border: 1px solid rgba(145, 178, 255, 0.12);
+      background: #08111f;
+      overflow: hidden;
+    }
+
+    .terminal-top {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(145, 178, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .terminal-body {
+      padding: 18px 18px 20px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92rem;
+      color: #c9ebff;
+    }
+
+    .terminal-body span {
+      color: #7dd3fc;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(145, 178, 255, 0.1);
+      background: rgba(125, 211, 252, 0.03);
+    }
+
+    .section {
+      padding: 34px 0;
+    }
+
+    .section-title {
+      margin-bottom: 18px;
+      font-size: 0.92rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .panel {
+      padding: 24px;
+    }
+
+    .panel h3 {
+      margin-bottom: 10px;
+      font-size: 1.18rem;
+    }
+
+    .panel p,
+    .panel li {
+      color: var(--muted);
+    }
+
+    .panel ul,
+    .steps {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .steps li + li,
+    .panel li + li {
+      margin-top: 8px;
+    }
+
+    .cta {
+      margin: 28px 0 64px;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .cta-copy {
+      max-width: 58ch;
+    }
+
+    .cta-copy p {
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .footer {
+      padding: 10px 0 40px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero-copy,
+      .hero-card,
+      .panel,
+      .cta {
+        padding: 22px;
+      }
+
+      h1 {
+        max-width: 10ch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark">N</span>
+        <span>Nova</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#workflow">Workflow</a>
+        <a href="#alpha">Alpha</a>
+        <a href="#docs">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <article class="hero-copy">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Local-First Alpha
+          </div>
+          <h1>Agent chat first. Studio only when it helps.</h1>
+          <p class="hero-subtitle">
+            Nova is a local-first agent chat workspace for technical users. The product story is intentionally narrow:
+            start in chat, keep auth and API access locked down, and move into files, previews, or commands only when
+            the task genuinely needs them.
+          </p>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://github.com/Ntooxx/Nova">View Repository</a>
+            <a class="button button-secondary" href="https://github.com/Ntooxx/Nova/blob/main/README.md">Read Alpha Guide</a>
+          </div>
+        </article>
+
+        <aside class="hero-card">
+          <div class="terminal" aria-label="Nova quick start">
+            <div class="terminal-top">
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+            </div>
+            <div class="terminal-body">
+              <div><span>$</span> npm install</div>
+              <div><span>$</span> Copy-Item .env.example .env</div>
+              <div><span>$</span> npm run db:generate</div>
+              <div><span>$</span> npm run db:push</div>
+              <div><span>$</span> npm run dev</div>
+            </div>
+          </div>
+          <div class="mini-list">
+            <div class="mini-item">
+              <strong>Security posture</strong><br />
+              Remote UI is off by default. Remote API access requires `NOVA_API_SECRET`.
+            </div>
+            <div class="mini-item">
+              <strong>Primary audience</strong><br />
+              Technical alpha users who want an agentic chat surface without exposing every capability by default.
+            </div>
+            <div class="mini-item">
+              <strong>Release stance</strong><br />
+              Open-source alpha, biased toward clarity, guarded execution, and one hero workflow.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="workflow" class="section">
+      <div class="section-title">Hero Workflow</div>
+      <div class="grid-3">
+        <article class="panel">
+          <h3>1. Start in chat</h3>
+          <p>Define the task, keep the main surface simple, and let Nova plan or draft the first pass.</p>
+        </article>
+        <article class="panel">
+          <h3>2. Move into Studio only when needed</h3>
+          <p>Use files, previews, and commands as secondary tools when the work leaves pure conversation.</p>
+        </article>
+        <article class="panel">
+          <h3>3. Keep the rest as support surfaces</h3>
+          <p>Teach, Skills, Doctor, and Ops stay available, but they no longer compete with the main story.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="alpha" class="section">
+      <div class="section-title">Alpha Scope</div>
+      <div class="grid-3">
+        <article class="panel">
+          <h3>What Nova is shipping now</h3>
+          <ul>
+            <li>Streaming agent chat with guarded tool execution</li>
+            <li>Local Studio for project-aware files, previews, and commands</li>
+            <li>Memory, teach, and skill support for iterative technical work</li>
+            <li>Provider support for local and hosted LLMs</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h3>What we intentionally de-emphasize</h3>
+          <ul>
+            <li>Surface sprawl that distracts from the chat-first experience</li>
+            <li>Remote-by-default exposure</li>
+            <li>Over-marketing broad capabilities before the core loop feels sharp</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h3>Who this is for</h3>
+          <ul>
+            <li>Developers who want a local-first agent workspace</li>
+            <li>Technical users comfortable running an alpha</li>
+            <li>Contributors who want a focused open-source direction</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="docs" class="section">
+      <div class="section-title">Read The Project</div>
+      <div class="grid-3">
+        <article class="panel">
+          <h3>Quick start</h3>
+          <ol class="steps">
+            <li>Install dependencies</li>
+            <li>Copy `.env.example` to `.env`</li>
+            <li>Set `DATABASE_URL` and `TOKEN_ENCRYPTION_SECRET`</li>
+            <li>Generate the Prisma client and push the DB</li>
+            <li>Run the dev server</li>
+          </ol>
+        </article>
+        <article class="panel">
+          <h3>Core docs</h3>
+          <ul>
+            <li><a href="https://github.com/Ntooxx/Nova/blob/main/README.md">README</a></li>
+            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/DEPLOYMENT.md">Deployment</a></li>
+            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/SECURITY.md">Security</a></li>
+            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/ONBOARDING.md">Onboarding</a></li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h3>Open-source alpha notes</h3>
+          <p>
+            The repository is being prepared as an Apache 2.0 open-source alpha. SQLite works locally; PostgreSQL is
+            preferred for production-style deployments.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="cta-copy">
+        <h2>Nova is a focused alpha now.</h2>
+        <p>
+          The goal is not to sell every surface at once. The goal is to make one strong workflow obvious, trustworthy,
+          and easy for technical users to adopt.
+        </p>
+      </div>
+      <div class="cta-row">
+        <a class="button button-primary" href="https://github.com/Ntooxx/Nova">Open GitHub</a>
+        <a class="button button-secondary" href="https://github.com/Ntooxx/Nova/issues">Track Issues</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Nova | Local-first agent chat alpha for technical users.</p>
+    </footer>
+  </main>
+</body>
+</html>

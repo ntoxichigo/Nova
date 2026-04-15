@@ -10,7 +10,7 @@ import { SkillCard } from './SkillCard';
 import { CreateSkillDialog } from './CreateSkillDialog';
 import { useAppStore, type Skill } from '@/store/app-store';
 import { toast } from 'sonner';
-import { Sparkles, Search, Filter } from 'lucide-react';
+import { Sparkles, Search, Filter, Download, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { categoryColors } from './SkillCard';
 
@@ -24,6 +24,64 @@ export function SkillsView() {
   const [filterActive, setFilterActive] = useState<'all' | 'active' | 'inactive'>('all');
   const [editSkill, setEditSkill] = useState<Skill | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [applyingGolden12, setApplyingGolden12] = useState(false);
+
+  const handleImportBuiltins = async () => {
+    setImporting(true);
+    try {
+      const res = await fetch('/api/skills/import-builtins', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(`Imported ${data.imported} built-in skills (${data.skipped} already existed)`);
+        loadSkills();
+      } else {
+        toast.error('Failed to import built-in skills');
+      }
+    } catch {
+      toast.error('Failed to import built-in skills');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleApplyGolden12 = async () => {
+    const confirmed = window.confirm(
+      'Apply Golden 12 profile? This will activate the top 12 workflow skills and archive all others.'
+    );
+    if (!confirmed) return;
+
+    setApplyingGolden12(true);
+    try {
+      const res = await fetch('/api/skills/profiles/golden-12', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dryRun: false }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || 'Failed to apply Golden 12 profile');
+        return;
+      }
+
+      const data = await res.json();
+      toast.success(
+        `Golden 12 applied: ${data.activeAfter} active, ${data.archivedCount} archived`
+      );
+
+      if (data.missingCount > 0) {
+        toast.warning(`${data.missingCount} profile slots are missing installed skills`);
+      }
+
+      loadSkills();
+    } catch (err) {
+      console.error('Failed to apply Golden 12 profile:', err);
+      toast.error('Failed to apply Golden 12 profile');
+    } finally {
+      setApplyingGolden12(false);
+    }
+  };
 
   const loadSkills = useCallback(async () => {
     try {
@@ -143,6 +201,7 @@ export function SkillsView() {
   const inactiveCount = skills.length - activeCount;
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="mx-auto max-w-6xl p-6">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -155,7 +214,27 @@ export function SkillsView() {
             Manage Nova&apos;s capabilities. {activeCount} active · {inactiveCount} inactive
           </p>
         </div>
-        <CreateSkillDialog onSubmit={handleCreate} />
+        <div className="flex gap-2">
+          <Button
+            variant="default"
+            onClick={handleApplyGolden12}
+            disabled={applyingGolden12}
+            className="gap-2"
+          >
+            <Crown className="h-4 w-4" />
+            {applyingGolden12 ? 'Applying Golden 12...' : 'Apply Golden 12'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleImportBuiltins}
+            disabled={importing}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {importing ? 'Importing…' : 'Import Built-in Skills'}
+          </Button>
+          <CreateSkillDialog onSubmit={handleCreate} />
+        </div>
       </div>
 
       {/* Filters */}
@@ -258,6 +337,7 @@ export function SkillsView() {
           onOpenChange={setEditDialogOpen}
         />
       )}
+    </div>
     </div>
   );
 }

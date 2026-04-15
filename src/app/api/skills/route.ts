@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { tryRecordAuditEvent } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,16 @@ export async function POST(request: NextRequest) {
         icon: icon || 'Zap',
       },
     });
+
+    await tryRecordAuditEvent({
+      source: 'skills',
+      action: 'create',
+      entityType: 'skill',
+      entityId: skill.id,
+      entityLabel: skill.name,
+      summary: `Created skill "${skill.name}"`,
+      details: { category: skill.category },
+    });
     
     return NextResponse.json(skill, { status: 201 });
   } catch (error: unknown) {
@@ -57,6 +68,16 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: fields,
     });
+
+    await tryRecordAuditEvent({
+      source: 'skills',
+      action: 'update',
+      entityType: 'skill',
+      entityId: skill.id,
+      entityLabel: skill.name,
+      summary: `Updated skill "${skill.name}"`,
+      details: { keys: Object.keys(fields) },
+    });
     
     return NextResponse.json(skill);
   } catch (error: unknown) {
@@ -74,7 +95,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Skill ID is required' }, { status: 400 });
     }
     
+    const existing = await db.skill.findUnique({ where: { id } });
     await db.skill.delete({ where: { id } });
+
+    await tryRecordAuditEvent({
+      source: 'skills',
+      action: 'delete',
+      entityType: 'skill',
+      entityId: id,
+      entityLabel: existing?.name || id,
+      summary: `Deleted skill "${existing?.name || id}"`,
+      details: {},
+    });
     
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

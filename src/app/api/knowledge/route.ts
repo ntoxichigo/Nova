@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getEmbedding, encodeEmbedding } from '@/lib/embeddings';
+import { tryRecordAuditEvent } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,12 +39,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Topic and content are required' }, { status: 400 });
     }
     
+    // Generate embedding asynchronously (non-blocking if Ollama unavailable)
+    const embeddingVec = await getEmbedding(`${topic}\n${content}`);
+    
     const knowledge = await db.knowledge.create({
       data: {
         topic,
         content,
         tags: tags ? JSON.stringify(tags) : '[]',
         source: 'user_teach',
+        embedding: embeddingVec ? encodeEmbedding(embeddingVec) : null,
+      },
+    });
+
+    await tryRecordAuditEvent({
+      source: 'knowledge',
+      action: 'create',
+      entityType: 'knowledge',
+      entityId: knowledge.id,
+      entityLabel: knowledge.topic,
+      summary: `Created knowledge entry "${knowledge.topic}"`,
+      details: {
+        tagCount: tags ? tags.length : 0,
       },
     });
     
@@ -62,7 +80,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Knowledge ID is required' }, { status: 400 });
     }
     
+    const existing = await db.knowledge.findUnique({ where: { id } });
     await db.knowledge.delete({ where: { id } });
+
+    await tryRecordAuditEvent({
+      source: 'knowledge',
+      action: 'delete',
+      entityType: 'knowledge',
+      entityId: id,
+      entityLabel: existing?.topic || id,
+      summary: `Deleted knowledge entry "${existing?.topic || id}"`,
+      details: {},
+    });
     
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

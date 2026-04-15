@@ -9,15 +9,21 @@ datasource db {
 }
 
 model Skill {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  instructions String
-  category    String   @default("general")
-  isActive    Boolean  @default(true)
-  icon        String   @default("Zap")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  instructions    String
+  category        String   @default("general")
+  isActive        Boolean  @default(true)
+  icon            String   @default("Zap")
+  isBuiltIn       Boolean  @default(false)
+  executionMode   String   @default("prompt")
+  toolDefinition  String   @default("{}")
+  accessCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 model Knowledge {
@@ -26,14 +32,22 @@ model Knowledge {
   content   String
   tags      String   @default("[]")
   source    String   @default("user_teach")
+  embedding String?  @default("")
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Conversation {
   id        String    @id @default(cuid())
   title     String    @default("New Conversation")
+  summary   String    @default("")  // sliding-window compressed summary of older messages
+  tags      String    @default("[]") // JSON array of user-defined tags
+  pinned    Boolean   @default(false)
   createdAt DateTime  @default(now())
   messages  Message[]
+
+  @@index([createdAt])
 }
 
 model Message {
@@ -42,8 +56,27 @@ model Message {
   role           String
   content        String
   skillsUsed     String      @default("[]")
+  feedback       Int?        // 1 = thumbs up, -1 = thumbs down, null = no feedback
+  tokenCount     Int?        // token count for observability
+  latencyMs      Int?        // response latency in ms
+  toolCalls      String      @default("[]") // JSON array of tool call records
+  modelUsed      String      @default("")   // which model generated this
   createdAt      DateTime    @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([createdAt])
+}
+
+model MemoryRelation {
+  id        String   @id @default(cuid())
+  subject   String   // e.g. "user"
+  relation  String   // e.g. "likes", "works_at", "plans_to"
+  object    String   // e.g. "coffee"
+  source    String   @default("extracted") // "extracted" | "user"
+  createdAt DateTime @default(now())
+
+  @@unique([subject, relation, object])
 }
 
 model AgentMemory {
@@ -52,8 +85,20 @@ model AgentMemory {
   content      String
   importance   Int      @default(5)
   accessCount  Int      @default(0)
+  embedding    String?  @default("")
   lastAccessed DateTime @default(now())
   createdAt    DateTime @default(now())
+
+  @@index([importance, lastAccessed])
+  @@index([createdAt])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  title     String   @unique
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Settings {
@@ -61,4 +106,177 @@ model Settings {
   value String
 
   @@map("settings")
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  service     String   @unique // "github" | "google"
+  accessToken String   @default("")
+  refreshToken String  @default("")
+  scope       String   @default("")
+  meta        String   @default("{}") // JSON: user name, email, avatar, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Prompt Library
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  content     String   // the system prompt text
+  category    String   @default("general")
+  isDefault   Boolean  @default(false) // at most one default prompt
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Scheduled Agent Tasks
+model ScheduledTask {
+  id          String   @id @default(cuid())
+  name        String
+  prompt      String          // the message to send to the agent
+  cronExpr    String          // cron expression e.g. "0 9 * * *"
+  enabled     Boolean  @default(true)
+  channel     String   @default("log") // "log" | "telegram"
+  lastRunAt   DateTime?
+  lastResult  String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// RSS Feed auto-import
+model RSSFeed {
+  id          String   @id @default(cuid())
+  name        String
+  url         String   @unique
+  enabled     Boolean  @default(true)
+  lastFetchAt DateTime?
+  itemCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// MCP Server connections
+model MCPServer {
+  id          String   @id @default(cuid())
+  name        String
+  transport   String   @default("stdio") // "stdio" | "sse"
+  command     String   @default("")      // for stdio: the command to run
+  url         String   @default("")      // for sse: the endpoint URL
+  args        String   @default("[]")    // JSON array of command args
+  env         String   @default("{}")    // JSON env vars
+  enabled     Boolean  @default(true)
+  toolCount   Int      @default(0)       // discovered tools
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Script Editor / IDE
+model ScriptProject {
+  id          String   @id @default(cuid())
+  name        String   @default("Untitled Project")
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  files       ScriptFile[]
+  folders     ScriptFolder[]
+  executions  ScriptExecution[]
+  messages    ScriptMessage[]
+  commands    ScriptCommandExecution[]
+
+  @@index([createdAt])
+}
+
+model ScriptFile {
+  id        String   @id @default(cuid())
+  projectId String
+  path      String         // e.g. "src/index.js", "README.md"
+  content   String   @default("")
+  language  String   @default("javascript")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   ScriptProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ScriptExecution {
+  id        String   @id @default(cuid())
+  projectId String
+  fileId    String?        // which file was run (null = whole project entry)
+  status    String   @default("pending")  // pending | running | success | error
+  output    String   @default("")
+  error     String   @default("")
+  duration  Int?           // ms
+  createdAt DateTime @default(now())
+
+  project   ScriptProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+model ScriptFolder {
+  id        String   @id @default(cuid())
+  projectId String
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   ScriptProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, path])
+  @@index([projectId])
+}
+
+model ScriptMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  role      String
+  content   String
+  toolCalls String   @default("[]")
+  createdAt DateTime @default(now())
+
+  project   ScriptProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+model ScriptCommandExecution {
+  id        String   @id @default(cuid())
+  projectId String
+  command   String
+  status    String   @default("pending") // pending | running | success | error
+  output    String   @default("")
+  error     String   @default("")
+  exitCode  Int?
+  duration  Int?
+  createdAt DateTime @default(now())
+
+  project   ScriptProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  source         String
+  action         String
+  entityType     String   @default("")
+  entityId       String   @default("")
+  entityLabel    String   @default("")
+  status         String   @default("success") // success | error | blocked | review_required | approved | rejected
+  severity       String   @default("info")    // info | warning | critical
+  summary        String
+  details        String   @default("{}")
+  conversationId String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([source, createdAt])
+  @@index([severity, createdAt])
 }

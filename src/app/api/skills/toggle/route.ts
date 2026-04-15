@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { tryRecordAuditEvent } from '@/lib/audit';
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -18,6 +19,18 @@ export async function PATCH(request: NextRequest) {
     const updated = await db.skill.update({
       where: { id },
       data: { isActive: !skill.isActive },
+    });
+
+    await tryRecordAuditEvent({
+      source: 'skills',
+      action: 'toggle',
+      entityType: 'skill',
+      entityId: updated.id,
+      entityLabel: updated.name,
+      summary: `${updated.isActive ? 'Activated' : 'Deactivated'} skill "${updated.name}"`,
+      details: {
+        isActive: updated.isActive,
+      },
     });
     
     return NextResponse.json(updated);

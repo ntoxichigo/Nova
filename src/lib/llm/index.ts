@@ -1,5 +1,5 @@
 import type { LLMConfig, LLMProvider } from './types';
-import { ZAIProvider, OpenAIProvider, OllamaProvider, LMStudioProvider, CustomProvider } from './providers';
+import { ZAIProvider, OpenAIProvider, XiaomiProvider, OllamaProvider, LMStudioProvider, CustomProvider, OpenRouterProvider, classifyLLMError } from './providers';
 
 export function createLLMProvider(config: LLMConfig): LLMProvider {
   switch (config.provider) {
@@ -7,10 +7,19 @@ export function createLLMProvider(config: LLMConfig): LLMProvider {
       return new ZAIProvider();
     case 'openai':
       return new OpenAIProvider(config);
+    case 'xiaomi':
+      return new XiaomiProvider(config);
     case 'ollama':
       return new OllamaProvider(config);
+    case 'ollama-cloud':
+      return new OllamaProvider({
+        ...config,
+        baseUrl: 'https://ollama.com',
+      });
     case 'lmstudio':
       return new LMStudioProvider(config);
+    case 'openrouter':
+      return new OpenRouterProvider(config);
     case 'custom':
       return new CustomProvider(config);
     default:
@@ -24,6 +33,6 @@ export function getDefaultConfig(): LLMConfig {
   };
 }
 
-export { ZAIProvider, OpenAIProvider, OllamaProvider, LMStudioProvider, CustomProvider };
+export { ZAIProvider, OpenAIProvider, XiaomiProvider, OllamaProvider, LMStudioProvider, CustomProvider, classifyLLMError };
 
-export type { LLMMessage, LLMResponse, LLMProvider, LLMConfig };
+export type { LLMMessage, LLMResponse, LLMProvider, LLMConfig } from './types';

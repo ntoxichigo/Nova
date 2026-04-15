@@ -48,6 +48,7 @@ export function TeachView() {
   };
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="mx-auto max-w-4xl p-6">
       {/* Header */}
       <div className="mb-8 text-center">
@@ -120,6 +121,7 @@ export function TeachView() {
           <SetPreferencesForm onSuccess={showSuccessToast} />
         </TabsContent>
       </Tabs>
+    </div>
     </div>
   );
 }

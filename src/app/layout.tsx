@@ -1,23 +1,24 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from 'next';
+import { IBM_Plex_Mono, Manrope } from 'next/font/google';
+import './globals.css';
+import { Toaster } from '@/components/ui/sonner';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const manrope = Manrope({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
-  title: "Nova AI — Intelligent Agent Platform",
-  description: "An AI agent that learns and grows with you. Teach Nova new skills, share knowledge, and watch it become smarter over time.",
+  title: 'Nova - Local-First Agent Chat Alpha',
+  description: 'A local-first agent chat workspace for technical users, with optional build tools and guarded automation.',
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.ico',
   },
 };
 
@@ -28,9 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${manrope.variable} ${ibmPlexMono.variable} antialiased`}>
         {children}
         <Toaster
           position="top-right"
@@ -38,9 +37,10 @@ export default function RootLayout({
           theme="dark"
           toastOptions={{
             style: {
-              background: 'oklch(0.17 0.015 290)',
-              border: 'oklch(0.3 0.03 290)',
-              color: 'oklch(0.95 0.01 290)',
+              background: 'rgba(15, 23, 42, 0.96)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'oklch(0.96 0.004 255)',
+              boxShadow: '0 24px 80px rgba(2, 6, 23, 0.45)',
             },
           }}
         />

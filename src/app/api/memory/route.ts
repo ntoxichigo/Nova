@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getEmbedding, encodeEmbedding } from '@/lib/embeddings';
+import { tryRecordAuditEvent } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,11 +34,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Type must be one of: ${validTypes.join(', ')}` }, { status: 400 });
     }
     
+    const embeddingVec = await getEmbedding(content).catch(() => null);
     const memory = await db.agentMemory.create({
       data: {
         type,
         content,
         importance: importance || 5,
+        embedding: embeddingVec ? encodeEmbedding(embeddingVec) : null,
+      },
+    });
+
+    await tryRecordAuditEvent({
+      source: 'memory',
+      action: 'create',
+      entityType: 'memory',
+      entityId: memory.id,
+      entityLabel: memory.type,
+      summary: `Created ${memory.type} memory`,
+      details: {
+        importance: memory.importance,
       },
     });
     
@@ -51,12 +67,50 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const scope = searchParams.get('scope');
+
+    if (scope === 'all') {
+      const [memoryResult, relationResult] = await db.$transaction([
+        db.agentMemory.deleteMany(),
+        db.memoryRelation.deleteMany(),
+      ]);
+
+      await tryRecordAuditEvent({
+        source: 'memory',
+        action: 'reset',
+        entityType: 'memory',
+        entityId: 'all',
+        entityLabel: 'All Memories',
+        summary: 'Reset all memory entries and relations',
+        details: {
+          deletedMemories: memoryResult.count,
+          deletedRelations: relationResult.count,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        deletedMemories: memoryResult.count,
+        deletedRelations: relationResult.count,
+      });
+    }
     
     if (!id) {
       return NextResponse.json({ error: 'Memory ID is required' }, { status: 400 });
     }
     
+    const existing = await db.agentMemory.findUnique({ where: { id } });
     await db.agentMemory.delete({ where: { id } });
+
+    await tryRecordAuditEvent({
+      source: 'memory',
+      action: 'delete',
+      entityType: 'memory',
+      entityId: id,
+      entityLabel: existing?.type || id,
+      summary: `Deleted ${existing?.type || 'memory'} entry`,
+      details: {},
+    });
     
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
