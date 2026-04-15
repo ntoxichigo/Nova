@@ -3,68 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nova | Local-First Agent Chat Alpha</title>
+  <title>Nova | Local-First Agent Chat For Technical Work</title>
   <meta
     name="description"
-    content="Nova is a local-first agent chat alpha for technical users. Start in chat, move into Studio only when files, previews, or commands are needed."
+    content="Nova is a local-first agent chat workspace for technical users. Plan work, inspect code, draft changes, move into files and commands when needed, and keep remote access locked down by default."
   />
   <style>
     :root {
-      --bg: #09111f;
-      --bg-soft: #0f1a2e;
-      --panel: rgba(15, 26, 46, 0.86);
-      --panel-strong: rgba(12, 21, 38, 0.96);
-      --line: rgba(145, 178, 255, 0.16);
-      --text: #eef4ff;
-      --muted: #9eb0d1;
-      --accent: #7dd3fc;
-      --accent-2: #34d399;
-      --accent-3: #f59e0b;
-      --shadow: 0 24px 80px rgba(3, 7, 18, 0.44);
-      --radius: 22px;
-      --max: 1120px;
+      --bg: #07111f;
+      --bg-deep: #04101c;
+      --surface: rgba(9, 19, 36, 0.72);
+      --surface-strong: rgba(10, 20, 38, 0.92);
+      --line: rgba(148, 182, 255, 0.14);
+      --line-strong: rgba(148, 182, 255, 0.24);
+      --text: #edf5ff;
+      --muted: #99accd;
+      --accent: #81e6d9;
+      --accent-2: #8ec5ff;
+      --accent-3: #ffc76a;
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --shadow: 0 30px 90px rgba(2, 8, 20, 0.5);
+      --max-width: 1180px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(52, 211, 153, 0.12), transparent 32%),
-        radial-gradient(circle at top right, rgba(125, 211, 252, 0.16), transparent 30%),
-        linear-gradient(180deg, #08101d 0%, #0d1729 100%);
+      font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
       color: var(--text);
       line-height: 1.6;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(129, 230, 217, 0.12), transparent 26%),
+        radial-gradient(circle at 82% 14%, rgba(142, 197, 255, 0.14), transparent 30%),
+        radial-gradient(circle at 50% 120%, rgba(255, 199, 106, 0.07), transparent 28%),
+        linear-gradient(180deg, var(--bg-deep) 0%, var(--bg) 52%, #0a1628 100%);
+      overflow-x: hidden;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, black, transparent 82%);
+      pointer-events: none;
+      z-index: -1;
     }
+
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4, p { margin: 0; }
 
     .shell {
-      width: min(calc(100% - 32px), var(--max));
+      width: min(calc(100% - 32px), var(--max-width));
       margin: 0 auto;
     }
 
     .nav {
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 50;
       backdrop-filter: blur(18px);
-      background: rgba(8, 16, 29, 0.78);
-      border-bottom: 1px solid rgba(145, 178, 255, 0.08);
+      background: rgba(5, 12, 24, 0.72);
+      border-bottom: 1px solid rgba(148, 182, 255, 0.08);
     }
 
     .nav-inner {
-      min-height: 72px;
+      min-height: 76px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -75,66 +86,132 @@
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.01em;
     }
 
     .brand-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      color: #052033;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
       display: grid;
       place-items: center;
-      font-weight: 900;
-      box-shadow: 0 10px 30px rgba(52, 211, 153, 0.16);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: #072132;
+      box-shadow: 0 14px 34px rgba(129, 230, 217, 0.18);
     }
 
-    .nav-links {
+    .brand-mark svg { width: 22px; height: 22px; }
+
+    .nav-links,
+    .nav-actions {
       display: flex;
-      gap: 20px;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-links a {
       color: var(--muted);
-      font-size: 0.96rem;
+      font-size: 0.95rem;
+      transition: color 0.18s ease;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+
+    .button-primary {
+      color: #062032;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      box-shadow: 0 20px 40px rgba(129, 230, 217, 0.18);
+    }
+
+    .button-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.025);
+      border-color: var(--line);
+    }
+
+    .button-ghost {
+      min-height: 42px;
+      padding: 0 14px;
+      color: var(--muted);
+      border-color: rgba(148, 182, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .hero {
-      padding: 84px 0 56px;
+      padding: 92px 0 54px;
+      position: relative;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
       gap: 28px;
       align-items: stretch;
     }
 
     .hero-copy,
-    .hero-card,
-    .panel,
-    .cta {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .hero-copy {
-      padding: 40px;
+    .hero-visual,
+    .card,
+    .cta,
+    .summary-band {
       position: relative;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--surface);
+      box-shadow: var(--shadow);
       overflow: hidden;
     }
 
-    .hero-copy::after {
+    .hero-copy,
+    .hero-visual { min-height: 100%; }
+
+    .hero-copy { padding: 42px; }
+    .hero-visual {
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+        var(--surface-strong);
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .hero-copy::after,
+    .hero-visual::after {
       content: "";
       position: absolute;
-      inset: auto -40px -80px auto;
-      width: 220px;
-      height: 220px;
+      width: 240px;
+      height: 240px;
       border-radius: 999px;
-      background: radial-gradient(circle, rgba(125, 211, 252, 0.18), transparent 70%);
+      background: radial-gradient(circle, rgba(142, 197, 255, 0.15), transparent 70%);
       pointer-events: none;
+    }
+
+    .hero-copy::after {
+      right: -70px;
+      bottom: -90px;
+    }
+
+    .hero-visual::after {
+      left: -80px;
+      top: -80px;
+      background: radial-gradient(circle, rgba(129, 230, 217, 0.13), transparent 70%);
     }
 
     .eyebrow {
@@ -143,43 +220,70 @@
       gap: 10px;
       padding: 8px 14px;
       border-radius: 999px;
-      background: rgba(125, 211, 252, 0.08);
-      border: 1px solid rgba(125, 211, 252, 0.14);
+      border: 1px solid rgba(129, 230, 217, 0.16);
+      background: rgba(129, 230, 217, 0.08);
       color: var(--accent);
-      font-size: 0.86rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
       text-transform: uppercase;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.09em;
     }
 
     .eyebrow-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--accent-2);
-      box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.1);
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
+      background: var(--accent);
+      box-shadow: 0 0 0 8px rgba(129, 230, 217, 0.08);
+      animation: pulse 2.6s ease-in-out infinite;
     }
 
     h1 {
       margin-top: 22px;
-      font-size: clamp(2.8rem, 7vw, 5.2rem);
-      line-height: 0.98;
-      letter-spacing: -0.05em;
-      max-width: 12ch;
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
+      max-width: 11ch;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 48%, var(--accent-3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
     }
 
     .hero-subtitle {
       margin-top: 18px;
-      max-width: 60ch;
-      font-size: 1.08rem;
+      max-width: 62ch;
       color: var(--muted);
+      font-size: 1.07rem;
+    }
+
+    .hero-bullets {
+      margin: 26px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero-bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--muted);
+    }
+
+    .hero-bullets strong { color: var(--text); }
+
+    .bullet-icon {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      color: var(--accent);
+      margin-top: 2px;
     }
 
     .cta-row {
@@ -189,59 +293,65 @@
       flex-wrap: wrap;
     }
 
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 18px;
-      border-radius: 14px;
-      border: 1px solid transparent;
-      font-weight: 700;
-      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
     }
 
-    .button:hover {
-      transform: translateY(-1px);
+    .status-pill,
+    .mini-card,
+    .terminal,
+    .capability-strip {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      background: rgba(255, 255, 255, 0.025);
     }
 
-    .button-primary {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      color: #082031;
+    .status-pill {
+      padding: 14px;
+      min-height: 92px;
     }
 
-    .button-secondary {
-      background: rgba(255, 255, 255, 0.02);
-      border-color: var(--line);
+    .status-pill strong {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
       color: var(--text);
     }
 
-    .hero-card {
-      padding: 28px;
-      display: grid;
-      gap: 16px;
-      align-content: start;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
-        var(--panel-strong);
+    .status-pill span {
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .terminal {
-      border-radius: 18px;
-      border: 1px solid rgba(145, 178, 255, 0.12);
-      background: #08111f;
       overflow: hidden;
+      background: #061120;
+      animation: float-card 7s ease-in-out infinite;
     }
 
     .terminal-top {
       display: flex;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       padding: 14px 16px;
-      border-bottom: 1px solid rgba(145, 178, 255, 0.1);
-      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(148, 182, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
     }
 
-    .terminal-dot {
+    .terminal-title {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .terminal-lights {
+      display: flex;
+      gap: 8px;
+    }
+
+    .terminal-light {
       width: 10px;
       height: 10px;
       border-radius: 50%;
@@ -250,118 +360,348 @@
 
     .terminal-body {
       padding: 18px 18px 20px;
-      font-family: Consolas, "Courier New", monospace;
+      font-family: Consolas, "SFMono-Regular", "Courier New", monospace;
+      color: #cbe8ff;
       font-size: 0.92rem;
-      color: #c9ebff;
-    }
-
-    .terminal-body span {
-      color: #7dd3fc;
-    }
-
-    .mini-list {
       display: grid;
       gap: 12px;
     }
 
-    .mini-item {
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: 1px solid rgba(145, 178, 255, 0.1);
-      background: rgba(125, 211, 252, 0.03);
+    .terminal-line {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
     }
 
-    .section {
-      padding: 34px 0;
+    .prompt { color: var(--accent); }
+    .command { color: #e7f5ff; }
+
+    .result {
+      color: #94b6d7;
+      padding-left: 24px;
     }
 
-    .section-title {
-      margin-bottom: 18px;
-      font-size: 0.92rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      font-weight: 800;
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1.15em;
+      margin-left: 3px;
+      background: linear-gradient(180deg, var(--accent), transparent);
+      vertical-align: bottom;
+      animation: blink 0.9s step-end infinite;
     }
 
-    .grid-3 {
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mini-card { padding: 16px; }
+
+    .mini-icon {
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      color: #082433;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    }
+
+    .mini-icon svg { width: 18px; height: 18px; }
+
+    .mini-card p {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .summary-band {
+      margin-top: 26px;
+      padding: 18px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+    }
+
+    .summary-item {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(148, 182, 255, 0.1);
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .summary-item span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .section { padding: 42px 0; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .section-kicker {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.86rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .grid-3,
+    .grid-2 {
+      display: grid;
       gap: 20px;
     }
 
-    .panel {
-      padding: 24px;
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card { padding: 24px; }
+
+    .card:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .panel h3 {
-      margin-bottom: 10px;
-      font-size: 1.18rem;
+    .icon-shell {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-grid;
+      place-items: center;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, rgba(129, 230, 217, 0.18), rgba(142, 197, 255, 0.24));
+      color: var(--accent);
+      border: 1px solid rgba(129, 230, 217, 0.14);
     }
 
-    .panel p,
-    .panel li {
+    .icon-shell svg { width: 20px; height: 20px; }
+
+    .card h3,
+    .card h4 { margin-bottom: 10px; }
+
+    .card p,
+    .card li,
+    .timeline-copy,
+    .timeline-note { color: var(--muted); }
+
+    .timeline {
+      display: grid;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .timeline-step {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #062131;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+      box-shadow: 0 16px 30px rgba(142, 197, 255, 0.14);
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
       color: var(--muted);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      font-size: 0.88rem;
+      font-weight: 600;
     }
 
-    .panel ul,
-    .steps {
+    .tag svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+    }
+
+    .examples {
+      display: grid;
+      gap: 14px;
+    }
+
+    .example {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .example strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .example code {
+      display: block;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(3, 8, 18, 0.58);
+      color: #cbe8ff;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .docs-list,
+    .feature-list {
       margin: 0;
       padding-left: 18px;
     }
 
-    .steps li + li,
-    .panel li + li {
-      margin-top: 8px;
+    .docs-list li + li,
+    .feature-list li + li { margin-top: 8px; }
+
+    .capability-strip {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
     }
 
+    .capability-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .capability-label {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .capability-copy { color: var(--muted); }
+
     .cta {
-      margin: 28px 0 64px;
+      margin: 28px 0 70px;
       padding: 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 18px;
+      gap: 22px;
       flex-wrap: wrap;
+      background:
+        radial-gradient(circle at top right, rgba(142, 197, 255, 0.14), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
     }
 
-    .cta-copy {
-      max-width: 58ch;
-    }
-
-    .cta-copy p {
+    .cta p {
       color: var(--muted);
       margin-top: 6px;
+      max-width: 62ch;
     }
 
     .footer {
-      padding: 10px 0 40px;
+      padding: 8px 0 38px;
       color: var(--muted);
       font-size: 0.92rem;
     }
 
-    @media (max-width: 960px) {
-      .hero-grid,
-      .grid-3 {
-        grid-template-columns: 1fr;
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.92); }
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes float-card {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
       }
     }
 
-    @media (max-width: 720px) {
-      .nav-links {
-        display: none;
+    @media (max-width: 980px) {
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .summary-band { grid-template-columns: 1fr; }
+
+      .status-row,
+      .mini-grid { grid-template-columns: 1fr 1fr; }
+
+      .capability-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
       }
+    }
+
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
 
       .hero-copy,
-      .hero-card,
-      .panel,
-      .cta {
-        padding: 22px;
-      }
+      .hero-visual,
+      .card,
+      .cta { padding: 22px; }
 
-      h1 {
-        max-width: 10ch;
-      }
+      .status-row,
+      .mini-grid { grid-template-columns: 1fr; }
+
+      h1 { max-width: 10ch; }
     }
   </style>
 </head>
@@ -369,14 +709,23 @@
   <header class="nav">
     <div class="shell nav-inner">
       <a class="brand" href="#top">
-        <span class="brand-mark">N</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 18V6l6 4 8-5v13"></path>
+            <path d="M5 18h14"></path>
+          </svg>
+        </span>
         <span>Nova</span>
       </a>
       <nav class="nav-links" aria-label="Primary">
         <a href="#workflow">Workflow</a>
-        <a href="#alpha">Alpha</a>
+        <a href="#capabilities">Capabilities</a>
+        <a href="#examples">Examples</a>
         <a href="#docs">Docs</a>
       </nav>
+      <div class="nav-actions">
+        <a class="button button-ghost" href="https://github.com/ntoxichigo/Nova/blob/main/README.md">README</a>
+      </div>
     </div>
   </header>
 
@@ -388,148 +737,373 @@
             <span class="eyebrow-dot"></span>
             Local-First Alpha
           </div>
-          <h1>Agent chat first. Studio only when it helps.</h1>
+          <h1>Technical work becomes <span class="gradient-text">sharper</span> when the agent starts in chat.</h1>
           <p class="hero-subtitle">
-            Nova is a local-first agent chat workspace for technical users. The product story is intentionally narrow:
-            start in chat, keep auth and API access locked down, and move into files, previews, or commands only when
-            the task genuinely needs them.
+            Nova is a local-first agent chat workspace for developers and technical operators. It helps you reason
+            through a task, inspect a codebase, draft a plan, propose edits, and then move into files, previews, and
+            commands only when the work actually requires them.
           </p>
+          <ul class="hero-bullets">
+            <li>
+              <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12h16"></path><path d="M12 4v16"></path>
+              </svg>
+              <span><strong>Start narrow:</strong> define the task in chat and keep the first interaction focused.</span>
+            </li>
+            <li>
+              <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 18 10 6l4 8 2-4 4 8"></path>
+              </svg>
+              <span><strong>Go deeper when needed:</strong> open Studio for real files, previews, and command execution.</span>
+            </li>
+            <li>
+              <svg class="bullet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Z"></path>
+              </svg>
+              <span><strong>Stay guarded:</strong> remote access is not the default story, and auth stays locked down.</span>
+            </li>
+          </ul>
           <div class="cta-row">
-            <a class="button button-primary" href="https://github.com/Ntooxx/Nova">View Repository</a>
-            <a class="button button-secondary" href="https://github.com/Ntooxx/Nova/blob/main/README.md">Read Alpha Guide</a>
+            <a class="button button-primary" href="https://github.com/ntoxichigo/Nova">View Repository</a>
+            <a class="button button-secondary" href="https://github.com/ntoxichigo/Nova/blob/main/README.md">Read Alpha Guide</a>
           </div>
         </article>
 
-        <aside class="hero-card">
-          <div class="terminal" aria-label="Nova quick start">
-            <div class="terminal-top">
-              <span class="terminal-dot"></span>
-              <span class="terminal-dot"></span>
-              <span class="terminal-dot"></span>
+        <aside class="hero-visual">
+          <div class="status-row">
+            <div class="status-pill">
+              <strong>Chat First</strong>
+              <span>Conversation is the front door, not an afterthought.</span>
             </div>
-            <div class="terminal-body">
-              <div><span>$</span> npm install</div>
-              <div><span>$</span> Copy-Item .env.example .env</div>
-              <div><span>$</span> npm run db:generate</div>
-              <div><span>$</span> npm run db:push</div>
-              <div><span>$</span> npm run dev</div>
+            <div class="status-pill">
+              <strong>Local by Default</strong>
+              <span>Built for private, project-aware work on your own machine.</span>
+            </div>
+            <div class="status-pill">
+              <strong>Alpha Scope</strong>
+              <span>One strong workflow before capability sprawl.</span>
             </div>
           </div>
-          <div class="mini-list">
-            <div class="mini-item">
-              <strong>Security posture</strong><br />
-              Remote UI is off by default. Remote API access requires `NOVA_API_SECRET`.
+
+          <div class="terminal" aria-label="Nova example session">
+            <div class="terminal-top">
+              <div class="terminal-lights" aria-hidden="true">
+                <span class="terminal-light"></span>
+                <span class="terminal-light"></span>
+                <span class="terminal-light"></span>
+              </div>
+              <div class="terminal-title">nova session</div>
             </div>
-            <div class="mini-item">
-              <strong>Primary audience</strong><br />
-              Technical alpha users who want an agentic chat surface without exposing every capability by default.
-            </div>
-            <div class="mini-item">
-              <strong>Release stance</strong><br />
-              Open-source alpha, biased toward clarity, guarded execution, and one hero workflow.
+            <div class="terminal-body">
+              <div class="terminal-line"><span class="prompt">$</span><span class="command">Message Nova: trace why our auth gate fails remotely</span></div>
+              <div class="result">Nova inspects routing, env guards, and request handling before proposing a fix.</div>
+              <div class="terminal-line"><span class="prompt">$</span><span class="command">Open Studio only if files need edits</span></div>
+              <div class="result">Move from chat into concrete files, previews, or commands when the plan becomes implementation.</div>
+              <div class="terminal-line"><span class="prompt">$</span><span class="command">Ship as alpha for technical users<span class="cursor"></span></span></div>
             </div>
           </div>
         </aside>
       </div>
+
+      <div class="summary-band">
+        <div class="summary-item">
+          <strong>What Nova is good at</strong>
+          <span>Turning messy technical requests into a clear plan, concrete edits, and a contained execution loop.</span>
+        </div>
+        <div class="summary-item">
+          <strong>What it avoids</strong>
+          <span>Defaulting to a giant product story before the core chat workflow feels strong and trustworthy.</span>
+        </div>
+        <div class="summary-item">
+          <strong>Who it is for</strong>
+          <span>Developers, builders, and technical operators who want a local-first agent surface they can actually control.</span>
+        </div>
+      </div>
     </section>
 
     <section id="workflow" class="section">
-      <div class="section-title">Hero Workflow</div>
-      <div class="grid-3">
-        <article class="panel">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Hero Workflow</div>
+          <h2>The product story is intentionally narrow.</h2>
+        </div>
+        <p>Nova is strongest when the flow is obvious: start in chat, then widen only when the work becomes operational.</p>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 10h10"></path><path d="M7 14h7"></path><path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-3 4-3-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
+            </svg>
+          </div>
           <h3>1. Start in chat</h3>
-          <p>Define the task, keep the main surface simple, and let Nova plan or draft the first pass.</p>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-step">1</div>
+              <div>
+                <div class="timeline-copy">Define the task, ask for diagnosis, or request a first-pass plan.</div>
+                <div class="timeline-note">This is where ambiguity gets compressed into something workable.</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-step">2</div>
+              <div>
+                <div class="timeline-copy">Let Nova reason, summarize, compare options, or propose implementation steps.</div>
+                <div class="timeline-note">You should not have to jump into a full IDE surface just to get clarity.</div>
+              </div>
+            </div>
+          </div>
         </article>
-        <article class="panel">
-          <h3>2. Move into Studio only when needed</h3>
-          <p>Use files, previews, and commands as secondary tools when the work leaves pure conversation.</p>
-        </article>
-        <article class="panel">
-          <h3>3. Keep the rest as support surfaces</h3>
-          <p>Teach, Skills, Doctor, and Ops stay available, but they no longer compete with the main story.</p>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5h16v12H4z"></path><path d="M8 19h8"></path><path d="M12 17v2"></path>
+            </svg>
+          </div>
+          <h3>2. Escalate only when the task becomes concrete</h3>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-step">3</div>
+              <div>
+                <div class="timeline-copy">Open Studio for files, previews, commands, or generated project structure.</div>
+                <div class="timeline-note">The tools support the conversation instead of competing with it.</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-step">4</div>
+              <div>
+                <div class="timeline-copy">Use Teach, Skills, Doctor, and Ops as secondary surfaces.</div>
+                <div class="timeline-note">Helpful, but not the first thing a new user has to understand.</div>
+              </div>
+            </div>
+          </div>
         </article>
       </div>
     </section>
 
-    <section id="alpha" class="section">
-      <div class="section-title">Alpha Scope</div>
+    <section id="capabilities" class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Capabilities</div>
+          <h2>What Nova can actually help you achieve.</h2>
+        </div>
+        <p>Not vague “AI magic.” These are the concrete classes of work the product is already shaped around.</p>
+      </div>
+
       <div class="grid-3">
-        <article class="panel">
-          <h3>What Nova is shipping now</h3>
-          <ul>
-            <li>Streaming agent chat with guarded tool execution</li>
-            <li>Local Studio for project-aware files, previews, and commands</li>
-            <li>Memory, teach, and skill support for iterative technical work</li>
-            <li>Provider support for local and hosted LLMs</li>
-          </ul>
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m8 8 4-4 4 4"></path><path d="M12 4v10"></path><path d="M5 20h14"></path>
+            </svg>
+          </div>
+          <h3>Debug and unblock technical work</h3>
+          <p>Trace failing flows, summarize where the issue probably lives, and turn scattered context into a concrete next action.</p>
         </article>
-        <article class="panel">
-          <h3>What we intentionally de-emphasize</h3>
-          <ul>
-            <li>Surface sprawl that distracts from the chat-first experience</li>
-            <li>Remote-by-default exposure</li>
-            <li>Over-marketing broad capabilities before the core loop feels sharp</li>
-          </ul>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16v4H4z"></path><path d="M4 12h10v8H4z"></path><path d="M18 12h2"></path><path d="M19 11v2"></path>
+            </svg>
+          </div>
+          <h3>Plan implementation before editing</h3>
+          <p>Break a feature or cleanup into steps, tradeoffs, and likely file touch points before you start making changes.</p>
         </article>
-        <article class="panel">
-          <h3>Who this is for</h3>
-          <ul>
-            <li>Developers who want a local-first agent workspace</li>
-            <li>Technical users comfortable running an alpha</li>
-            <li>Contributors who want a focused open-source direction</li>
-          </ul>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m4 7 8 5 8-5"></path><path d="M4 17V7"></path><path d="M20 17V7"></path><path d="m4 17 8 5 8-5"></path>
+            </svg>
+          </div>
+          <h3>Generate and shape project scaffolds</h3>
+          <p>Use the IDE side when you need generated files, previews, or an editable starting point for a concrete build.</p>
+        </article>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20"></path><path d="M6 6h12"></path><path d="M6 18h12"></path>
+            </svg>
+          </div>
+          <h3>Accumulate working knowledge</h3>
+          <p>Teach Nova recurring facts, preferences, and reusable instructions so later conversations start from a better place.</p>
+        </article>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12h18"></path><path d="M12 3v18"></path><circle cx="12" cy="12" r="8"></circle>
+            </svg>
+          </div>
+          <h3>Route work through specialist surfaces</h3>
+          <p>Memory, Skills, Doctor, and Ops can support advanced workflows without replacing the core chat mental model.</p>
+        </article>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12c0-4.4 3.6-8 8-8 3.4 0 6.2 2 7.4 4.9"></path><path d="M20 12v8H4v-8"></path>
+            </svg>
+          </div>
+          <h3>Keep remote exposure under control</h3>
+          <p>Nova is framed for local-first technical use, with remote UI and API exposure deliberately not treated as the default.</p>
+        </article>
+      </div>
+
+      <div class="capability-strip" style="margin-top: 20px;">
+        <div class="capability-row">
+          <div class="capability-label">Primary strength</div>
+          <div class="capability-copy">A contained loop from problem statement to plan to implementation surface.</div>
+        </div>
+        <div class="capability-row">
+          <div class="capability-label">Not the goal</div>
+          <div class="capability-copy">Showing every feature at once or pretending every workflow is equally mature.</div>
+        </div>
+        <div class="capability-row">
+          <div class="capability-label">Current release posture</div>
+          <div class="capability-copy">Open-source alpha for technical users who can tolerate rough edges in exchange for control.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples" class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Example Requests</div>
+          <h2>The kind of work Nova is meant to support.</h2>
+        </div>
+        <p>These examples tell a more honest story than a generic marketing page. Nova is for concrete technical progress.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="examples">
+          <article class="example">
+            <strong>Trace a bug before we touch the code</strong>
+            <p>Ask Nova to inspect the auth flow, compare routes, or summarize which layer is most likely failing.</p>
+            <code>trace why remote API requests are failing after the auth gate change</code>
+          </article>
+          <article class="example">
+            <strong>Narrow a product release</strong>
+            <p>Use chat to cut scope, pick one hero workflow, and decide what should be hidden or de-emphasized.</p>
+            <code>take this product surface and reduce it to one alpha story for technical users</code>
+          </article>
+          <article class="example">
+            <strong>Move into Studio when it becomes implementation</strong>
+            <p>Once the plan is clear, open real files, previews, or commands instead of continuing with abstract discussion.</p>
+            <code>open the project in Studio and patch the README, settings copy, and landing page</code>
+          </article>
+        </div>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>
+            </svg>
+          </div>
+          <h3>Nova works best when the ask becomes more specific over time.</h3>
+          <p>
+            Start broad enough to get orientation, then progressively make the task more operational: inspect this file,
+            compare these routes, generate a scaffold, preview this page, or run this command in the project context.
+          </p>
+          <div class="tag-list">
+            <span class="tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M5 12h14"></path></svg>
+              Planning
+            </span>
+            <span class="tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v12H4z"></path><path d="M8 19h8"></path></svg>
+              Studio
+            </span>
+            <span class="tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Z"></path></svg>
+              Guardrails
+            </span>
+            <span class="tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h8"></path></svg>
+              Iteration
+            </span>
+          </div>
         </article>
       </div>
     </section>
 
     <section id="docs" class="section">
-      <div class="section-title">Read The Project</div>
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Docs And Setup</div>
+          <h2>Everything you need to evaluate the alpha.</h2>
+        </div>
+        <p>The setup story is still practical and developer-first: install, configure local secrets, initialize the database, and run.</p>
+      </div>
+
       <div class="grid-3">
-        <article class="panel">
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m4 12 4 4 12-12"></path>
+            </svg>
+          </div>
           <h3>Quick start</h3>
-          <ol class="steps">
-            <li>Install dependencies</li>
+          <ul class="feature-list">
+            <li>`npm install`</li>
             <li>Copy `.env.example` to `.env`</li>
             <li>Set `DATABASE_URL` and `TOKEN_ENCRYPTION_SECRET`</li>
-            <li>Generate the Prisma client and push the DB</li>
-            <li>Run the dev server</li>
-          </ol>
-        </article>
-        <article class="panel">
-          <h3>Core docs</h3>
-          <ul>
-            <li><a href="https://github.com/Ntooxx/Nova/blob/main/README.md">README</a></li>
-            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/DEPLOYMENT.md">Deployment</a></li>
-            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/SECURITY.md">Security</a></li>
-            <li><a href="https://github.com/Ntooxx/Nova/blob/main/docs/ONBOARDING.md">Onboarding</a></li>
+            <li>Run `npm run db:generate` and `npm run db:push`</li>
+            <li>Start with `npm run dev`</li>
           </ul>
         </article>
-        <article class="panel">
-          <h3>Open-source alpha notes</h3>
-          <p>
-            The repository is being prepared as an Apache 2.0 open-source alpha. SQLite works locally; PostgreSQL is
-            preferred for production-style deployments.
-          </p>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path>
+            </svg>
+          </div>
+          <h3>Core docs</h3>
+          <ul class="docs-list">
+            <li><a href="https://github.com/ntoxichigo/Nova/blob/main/README.md">README</a></li>
+            <li><a href="https://github.com/ntoxichigo/Nova/blob/main/docs/DEPLOYMENT.md">Deployment</a></li>
+            <li><a href="https://github.com/ntoxichigo/Nova/blob/main/docs/SECURITY.md">Security</a></li>
+            <li><a href="https://github.com/ntoxichigo/Nova/blob/main/docs/ONBOARDING.md">Onboarding</a></li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="icon-shell" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 20h12"></path><path d="M12 4v12"></path><path d="m8 8 4-4 4 4"></path>
+            </svg>
+          </div>
+          <h3>Release stance</h3>
+          <p>Nova is being shipped as an open-source alpha. It is honest about rough edges, but already strong enough to tell a focused story.</p>
         </article>
       </div>
     </section>
 
     <section class="cta">
-      <div class="cta-copy">
-        <h2>Nova is a focused alpha now.</h2>
+      <div>
+        <div class="section-kicker">Open-Source Alpha</div>
+        <h2>Nova is not trying to be everything yet.</h2>
         <p>
-          The goal is not to sell every surface at once. The goal is to make one strong workflow obvious, trustworthy,
-          and easy for technical users to adopt.
+          It is trying to be useful, local-first, and understandable. The headline is a contained technical workflow:
+          reason in chat, act with care, and widen into files and commands only when the work demands it.
         </p>
       </div>
       <div class="cta-row">
-        <a class="button button-primary" href="https://github.com/Ntooxx/Nova">Open GitHub</a>
-        <a class="button button-secondary" href="https://github.com/Ntooxx/Nova/issues">Track Issues</a>
+        <a class="button button-primary" href="https://github.com/ntoxichigo/Nova">Open GitHub</a>
+        <a class="button button-secondary" href="https://github.com/ntoxichigo/Nova/issues">Track Issues</a>
       </div>
     </section>
 
     <footer class="footer">
-      <p>Nova | Local-first agent chat alpha for technical users.</p>
+      <div class="footer-row">
+        <span>Nova | Local-first agent chat for technical work.</span>
+        <span>Built for technical alpha users who want control, context, and a clearer workflow.</span>
+      </div>
     </footer>
   </main>
 </body>
