@@ -25,6 +25,7 @@
       --radius-lg: 22px;
       --radius-md: 18px;
       --shadow: 0 30px 90px rgba(2, 8, 20, 0.5);
+      --shadow-soft: 0 20px 50px rgba(2, 8, 20, 0.34);
       --max-width: 1180px;
     }
 
@@ -444,6 +445,184 @@
       font-size: 0.9rem;
     }
 
+    .showcase-stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+    }
+
+    .mock-window,
+    .mock-sidebar,
+    .mock-stat,
+    .mock-float {
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mock-window {
+      padding: 18px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        rgba(5, 14, 28, 0.88);
+    }
+
+    .mock-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mock-breadcrumb {
+      color: var(--muted);
+      font-size: 0.84rem;
+      letter-spacing: 0.02em;
+    }
+
+    .mock-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mock-pill {
+      min-height: 30px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      border: 1px solid rgba(148, 182, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mock-layout {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .mock-sidebar {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .mock-nav-item {
+      min-height: 42px;
+      border-radius: 14px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .mock-nav-item.active {
+      color: var(--text);
+      border: 1px solid rgba(129, 230, 217, 0.18);
+      background: linear-gradient(135deg, rgba(129, 230, 217, 0.12), rgba(142, 197, 255, 0.08));
+    }
+
+    .mock-main {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mock-chat-card,
+    .mock-code-card,
+    .mock-insight {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(148, 182, 255, 0.1);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .mock-chat-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mock-bubble {
+      max-width: 92%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 0.93rem;
+    }
+
+    .mock-bubble.agent {
+      background: rgba(129, 230, 217, 0.08);
+      border: 1px solid rgba(129, 230, 217, 0.16);
+    }
+
+    .mock-bubble.user {
+      margin-left: auto;
+      background: rgba(142, 197, 255, 0.08);
+      border: 1px solid rgba(142, 197, 255, 0.16);
+    }
+
+    .mock-code-card code {
+      display: block;
+      color: #cae8ff;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .mock-right {
+      display: grid;
+      gap: 16px;
+    }
+
+    .mock-stat {
+      padding: 16px;
+    }
+
+    .mock-stat strong {
+      display: block;
+      font-size: 1.55rem;
+      margin-bottom: 4px;
+    }
+
+    .mock-stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .mock-float {
+      padding: 18px;
+      background:
+        radial-gradient(circle at top right, rgba(129, 230, 217, 0.12), transparent 36%),
+        rgba(10, 20, 36, 0.9);
+    }
+
+    .mock-float h4 {
+      margin-bottom: 8px;
+    }
+
+    .mock-float p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .copy-emphasis {
+      color: var(--text);
+      font-weight: 600;
+    }
+
     .section { padding: 42px 0; }
 
     .section-head {
@@ -679,7 +858,8 @@
       .hero-grid,
       .grid-3,
       .grid-2,
-      .summary-band { grid-template-columns: 1fr; }
+      .summary-band,
+      .showcase-grid { grid-template-columns: 1fr; }
 
       .status-row,
       .mini-grid { grid-template-columns: 1fr 1fr; }
@@ -687,6 +867,10 @@
       .capability-row {
         grid-template-columns: 1fr;
         gap: 6px;
+      }
+
+      .mock-layout {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -737,11 +921,11 @@
             <span class="eyebrow-dot"></span>
             Local-First Alpha
           </div>
-          <h1>Technical work becomes <span class="gradient-text">sharper</span> when the agent starts in chat.</h1>
+          <h1>Nova turns messy technical requests into a <span class="gradient-text">clear execution loop</span>.</h1>
           <p class="hero-subtitle">
-            Nova is a local-first agent chat workspace for developers and technical operators. It helps you reason
-            through a task, inspect a codebase, draft a plan, propose edits, and then move into files, previews, and
-            commands only when the work actually requires them.
+            Nova is a local-first agent chat workspace for developers and technical operators. Use it to diagnose a bug,
+            shape a rollout, inspect a codebase, draft changes, and then widen into files, previews, and commands only
+            when the work becomes concrete.
           </p>
           <ul class="hero-bullets">
             <li>
@@ -802,6 +986,27 @@
               <div class="terminal-line"><span class="prompt">$</span><span class="command">Ship as alpha for technical users<span class="cursor"></span></span></div>
             </div>
           </div>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <div class="mini-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16v4H4z"></path><path d="M4 10h7v10H4z"></path><path d="M14 10h6"></path><path d="M14 15h6"></path><path d="M14 20h6"></path>
+                </svg>
+              </div>
+              <strong>Project-aware context</strong>
+              <p>Plans, file edits, and previews stay anchored to a real workspace instead of floating as generic text.</p>
+            </div>
+            <div class="mini-card">
+              <div class="mini-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Z"></path>
+                </svg>
+              </div>
+              <strong>Guarded by default</strong>
+              <p>Remote access is not treated as the starting point, which keeps the product story more trustworthy.</p>
+            </div>
+          </div>
         </aside>
       </div>
 
@@ -817,6 +1022,70 @@
         <div class="summary-item">
           <strong>Who it is for</strong>
           <span>Developers, builders, and technical operators who want a local-first agent surface they can actually control.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Product View</div>
+          <h2>A clearer picture of how Nova feels in use.</h2>
+        </div>
+        <p>
+          This is the story the page should communicate: <span class="copy-emphasis">chat for reasoning, Studio for execution, and support surfaces around the edges</span>.
+        </p>
+      </div>
+
+      <div class="showcase-stack">
+        <div class="showcase-grid">
+          <article class="mock-window">
+            <div class="mock-topbar">
+              <div class="mock-breadcrumb">Nova / chat-driven execution</div>
+              <div class="mock-pills">
+                <span class="mock-pill">ask risky</span>
+                <span class="mock-pill">local-first</span>
+                <span class="mock-pill">alpha</span>
+              </div>
+            </div>
+            <div class="mock-layout">
+              <div class="mock-sidebar">
+                <div class="mock-nav-item active"><span>Chat</span><span>live</span></div>
+                <div class="mock-nav-item"><span>Studio</span><span>files</span></div>
+                <div class="mock-nav-item"><span>Teach</span><span>memory</span></div>
+                <div class="mock-nav-item"><span>Doctor</span><span>checks</span></div>
+                <div class="mock-nav-item"><span>Ops</span><span>runtime</span></div>
+              </div>
+              <div class="mock-main">
+                <div class="mock-chat-card">
+                  <div class="mock-bubble user">We need to narrow this release and stop marketing every surface at once.</div>
+                  <div class="mock-bubble agent">Start by locking down auth and API exposure, then market one hero workflow: technical users start in chat and escalate into Studio only when files or commands are needed.</div>
+                  <div class="mock-bubble user">Good. Show me the files that shape that story and propose the landing-page copy.</div>
+                </div>
+                <div class="mock-code-card">
+                  <code>docs/index.html
+README.md
+src/components/layout/AppShell.tsx
+src/components/settings/SettingsView.tsx</code>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <div class="mock-right">
+            <div class="mock-stat">
+              <strong>1</strong>
+              <span>hero workflow to explain first</span>
+            </div>
+            <div class="mock-stat">
+              <strong>3</strong>
+              <span>core transitions: chat, Studio, support surfaces</span>
+            </div>
+            <div class="mock-float">
+              <h4>What the page should imply</h4>
+              <p>Nova is capable, but disciplined. It should feel like software that helps technical users finish work, not just generate language around it.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
